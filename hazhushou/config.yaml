@@ -9,13 +9,12 @@ url: "https://github.com/zhutianlei/hazhushou"
 image: "ghcr.io/zhutianlei/hazhushou-{arch}"
 ingress: true
 ingress_port: 8080
-ingress_entry: "/"
 panel_icon: "mdi:monitor-dashboard"
 panel_title: "HaAssistant"
 panel_admin: true
 boot: auto
 init: false
-host_network: true
+host_network: false
 map:
   - type: data
     read_only: false
