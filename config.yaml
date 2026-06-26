@@ -6,6 +6,7 @@ description: >-
 arch:
   - amd64
 url: "https://github.com/zhutianlei/hazhushou"
+image: "ghcr.io/zhutianlei/hazhushou"
 ingress: true
 ingress_port: 8080
 ingress_entry: "/admin/"
