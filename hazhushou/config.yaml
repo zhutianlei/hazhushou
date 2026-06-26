@@ -7,17 +7,15 @@ arch:
   - amd64
 url: "https://github.com/zhutianlei/hazhushou"
 image: "ghcr.io/zhutianlei/hazhushou-{arch}"
-webui: "http://[HOST]:[PORT:8099]/"
-ports:
-  8099/tcp: 8099
-ports_description:
-  8099/tcp: "Web 管理面板"
+startup: services
+ingress: true
+ingress_port: 8765
 panel_icon: "mdi:monitor-dashboard"
 panel_title: "HaAssistant"
 panel_admin: true
 boot: auto
 init: false
-host_network: false
+host_network: true
 map:
   - type: data
     read_only: false
