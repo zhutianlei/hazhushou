@@ -788,6 +788,28 @@
       document.getElementById('add-modal').classList.remove('active');
     }
 
+    async function saveWhitelistItem() {
+      const data = {
+        ip: document.getElementById('edit-ip').value.trim(),
+        view_path: document.getElementById('edit-view-path').value.trim(),
+        width: parseInt(document.getElementById('edit-width').value) || 0,
+        height: parseInt(document.getElementById('edit-height').value) || 0
+      };
+      if (!data.ip) { alert('IP地址必填'); return; }
+
+      if (currentEdit) {
+        await fetch('/admin/whitelist/' + encodeURIComponent(currentEdit), {
+          method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+        });
+      } else {
+        await fetch('/admin/whitelist', {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+        });
+      }
+      closeModal();
+      loadWhitelist();
+    }
+
     async function deleteItem(ip) {
       if (!confirm('确定删除 ' + ip + '？')) return;
       await fetch('/admin/whitelist/' + encodeURIComponent(ip), { method: 'DELETE' });
