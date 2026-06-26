@@ -6,7 +6,8 @@ description: >-
 arch:
   - amd64
   - aarch64
-url: "https://github.com/your-repo/ha-assistant"
+url: "https://github.com/zhutianlei/HaAssistant"
+image: "ghcr.io/zhutianlei/ha-assistant-{arch}"
 ingress: true
 ingress_port: 8080
 ingress_entry: "/admin/"
