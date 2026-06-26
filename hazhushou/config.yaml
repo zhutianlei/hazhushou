@@ -1,5 +1,5 @@
 name: "HaAssistant"
-version: "1.0.2"
+version: "1.0.3"
 slug: ha-assistant
 description: >-
   局域网终端与 Home Assistant 安全对接系统。服务端集中管控，客户端零信任。
@@ -8,7 +8,8 @@ arch:
 url: "https://github.com/zhutianlei/hazhushou"
 image: "ghcr.io/zhutianlei/hazhushou-{arch}"
 startup: services
-ingress: false
+ingress: true
+ingress_port: 8765
 panel_icon: "mdi:monitor-dashboard"
 panel_title: "HaAssistant"
 panel_admin: true
