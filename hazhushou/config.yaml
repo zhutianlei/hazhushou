@@ -1,8 +1,8 @@
-name: "HaAssistant"
+name: "HA助手"
 version: "1.0.9"
 slug: ha-assistant
 description: >-
-  局域网终端与 Home Assistant 安全对接系统。服务端集中管控，客户端零信任。
+  网吧终端安全对接Home Assistant，实现智能化操作。
 arch:
   - amd64
 url: "https://github.com/zhutianlei/hazhushou"
@@ -11,7 +11,7 @@ startup: services
 ingress: true
 ingress_port: 8765
 panel_icon: "mdi:monitor-dashboard"
-panel_title: "HaAssistant"
+panel_title: "HA助手"
 panel_admin: true
 boot: auto
 init: false
