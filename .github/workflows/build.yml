@@ -18,6 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get version from config.yaml
+        id: version
+        run: echo "version=$(grep '^version:' hazhushou/config.yaml | awk '{print $2}' | tr -d '"')" >> $GITHUB_OUTPUT
+
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -31,6 +35,8 @@ jobs:
           context: ./hazhushou
           push: true
           platforms: linux/${{ matrix.arch }}
-          tags: ghcr.io/zhutianlei/hazhushou-${{ matrix.arch }}:${{ github.ref_name }}
+          tags: |
+            ghcr.io/zhutianlei/hazhushou-${{ matrix.arch }}:${{ steps.version.outputs.version }}
+            ghcr.io/zhutianlei/hazhushou-${{ matrix.arch }}:latest
           build-args: |
             BUILD_FROM=${{ matrix.arch == 'aarch64' && 'ghcr.io/home-assistant/aarch64-base:latest' || 'ghcr.io/home-assistant/amd64-base:latest' }}
