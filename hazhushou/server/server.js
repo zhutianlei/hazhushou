@@ -19,18 +19,22 @@ function parseCookies(req, res, next) {
   next();
 }
 
+app.use((req, res, next) => {
+  console.log(`[HTTP] ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(express.json());
 app.use(parseCookies);
 
-// API routes
 app.use('/api', apiRoutes);
-
-// Admin panel routes (both / and /admin)
 app.use('/admin', adminRoutes);
-app.use('/', adminRoutes);
-
-// Serve static files for admin panel
 app.use('/static', express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+  console.log('[HTTP] Serving index.html');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 async function start() {
   try {
@@ -39,8 +43,6 @@ async function start() {
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`[Server] HaAssistant 服务端已启动`);
       console.log(`[Server] 监听端口: ${PORT}`);
-      console.log(`[Server] 管理面板: http://localhost:${PORT}/admin/`);
-      console.log(`[Server] API端点: http://localhost:${PORT}/api/terminal/pull`);
     });
   } catch (err) {
     console.error('[Server] 启动失败:', err.message);
