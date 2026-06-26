@@ -5,9 +5,8 @@ description: >-
   局域网终端与 Home Assistant 安全对接系统。服务端集中管控，客户端零信任。
 arch:
   - amd64
-  - aarch64
 url: "https://github.com/zhutianlei/HaAssistant"
-image: "ghcr.io/zhutianlei/haassistant-{arch}"
+image: "ghcr.io/zhutianlei/haassistant-amd64"
 ingress: true
 ingress_port: 8080
 ingress_entry: "/admin/"
