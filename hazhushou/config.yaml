@@ -8,13 +8,7 @@ arch:
 url: "https://github.com/zhutianlei/hazhushou"
 image: "ghcr.io/zhutianlei/hazhushou-{arch}"
 startup: services
-ingress: true
-ingress_port: 8765
-webui: "http://[HOST]:[PORT:8765]/"
-ports:
-  8765/tcp: 8765
-ports_description:
-  8765/tcp: "Web 管理面板"
+ingress: false
 panel_icon: "mdi:monitor-dashboard"
 panel_title: "HaAssistant"
 panel_admin: true
@@ -29,8 +23,10 @@ options:
   ha_username: ""
   ha_password: ""
   token_refresh_time: ""
+  port: 8765
 schema:
   ha_base_url: str
   ha_username: str
   ha_password: password
   token_refresh_time: str
+  port: int

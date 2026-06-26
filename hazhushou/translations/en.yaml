@@ -11,11 +11,11 @@ configuration:
     name: HA Password
     description: >-
       Home Assistant password for authentication
-  token_auto_refresh:
-    name: Auto Refresh Token
+  token_refresh_time:
+    name: Token Refresh Time
     description: >-
-      Enable automatic token refresh at specified hour
-  token_refresh_hour:
-    name: Refresh Hour
+      Daily token refresh time in HH:MM format (e.g., 03:30). Leave empty to disable.
+  port:
+    name: Port
     description: >-
-      Hour of day (0-23) to refresh tokens when auto-refresh is enabled
+      Server listening port (default: 8765)
