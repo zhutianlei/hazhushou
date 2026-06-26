@@ -20,7 +20,7 @@ cat > /data/ha-assistant/config.json << EOF
   "ha_password": "${HA_PASSWORD}",
   "token_auto_refresh": ${TOKEN_AUTO_REFRESH},
   "token_refresh_hour": ${TOKEN_REFRESH_HOUR},
-  "port": 8080,
+  "port": 80,
   "password_hash": "",
   "password_salt": ""
 }

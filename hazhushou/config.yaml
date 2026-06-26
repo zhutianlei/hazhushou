@@ -8,10 +8,10 @@ arch:
 url: "https://github.com/zhutianlei/hazhushou"
 image: "ghcr.io/zhutianlei/hazhushou-{arch}"
 ingress: true
-ingress_port: 8080
+ingress_port: 80
 ingress_entry: "/"
 ports:
-  8080/tcp: 8080
+  80/tcp: 8080
 panel_icon: "mdi:monitor-dashboard"
 panel_title: "HaAssistant"
 panel_admin: true
