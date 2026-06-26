@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: docker/setup-qemu-action@v3
+
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -30,6 +32,7 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/${{ matrix.arch }}
           tags: ghcr.io/zhutianlei/haassistant-${{ matrix.arch }}:${{ github.ref_name }}
           build-args: |
             BUILD_FROM=${{ matrix.arch == 'aarch64' && 'ghcr.io/home-assistant/aarch64-base:latest' || 'ghcr.io/home-assistant/amd64-base:latest' }}
