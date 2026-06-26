@@ -30,6 +30,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/zhutianlei/ha-assistant-${{ matrix.arch }}:${{ github.ref_name }}
+          tags: ghcr.io/zhutianlei/haassistant-${{ matrix.arch }}:${{ github.ref_name }}
           build-args: |
             BUILD_FROM=${{ matrix.arch == 'aarch64' && 'ghcr.io/home-assistant/aarch64-base:latest' || 'ghcr.io/home-assistant/amd64-base:latest' }}
