@@ -28,7 +28,7 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./hazhushou
           push: true
           platforms: linux/${{ matrix.arch }}
           tags: ghcr.io/zhutianlei/hazhushou-${{ matrix.arch }}:${{ github.ref_name }}
