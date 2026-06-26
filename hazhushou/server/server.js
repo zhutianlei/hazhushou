@@ -25,16 +25,12 @@ app.use(parseCookies);
 // API routes
 app.use('/api', apiRoutes);
 
-// Admin panel routes
+// Admin panel routes (both / and /admin)
 app.use('/admin', adminRoutes);
+app.use('/', adminRoutes);
 
 // Serve static files for admin panel
 app.use('/static', express.static(path.join(__dirname, 'public')));
-
-// Redirect root to admin panel
-app.get('/', (req, res) => {
-  res.redirect('/admin/');
-});
 
 async function start() {
   try {
