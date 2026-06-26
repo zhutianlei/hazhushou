@@ -10,6 +10,7 @@ image: "ghcr.io/zhutianlei/hazhushou-{arch}"
 startup: services
 ingress: true
 ingress_port: 8765
+webui: "http://[HOST]:[PORT:8765]/"
 panel_icon: "mdi:monitor-dashboard"
 panel_title: "HaAssistant"
 panel_admin: true
