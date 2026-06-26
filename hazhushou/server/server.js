@@ -8,6 +8,11 @@ const adminRoutes = require('./admin');
 const app = express();
 const PORT = readPortSync();
 
+app.use((req, res, next) => {
+  req.url = req.url.replace(/\/+/g, '/');
+  next();
+});
+
 function parseCookies(req, res, next) {
   const cookies = {};
   const header = req.headers.cookie || '';
@@ -19,11 +24,6 @@ function parseCookies(req, res, next) {
   next();
 }
 
-app.use((req, res, next) => {
-  console.log(`[HTTP] ${req.method} ${req.url}`);
-  next();
-});
-
 app.use(express.json());
 app.use(parseCookies);
 
@@ -32,7 +32,6 @@ app.use('/admin', adminRoutes);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-  console.log('[HTTP] Serving index.html');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
