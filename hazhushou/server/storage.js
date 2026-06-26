@@ -112,14 +112,8 @@ async function updateConfig(newConfig) {
   if (newConfig.ha_password !== undefined) {
     config.ha_password = newConfig.ha_password;
   }
-  if (newConfig.token_auto_refresh !== undefined) {
-    config.token_auto_refresh = !!newConfig.token_auto_refresh;
-  }
-  if (newConfig.token_refresh_hour !== undefined) {
-    const h = parseInt(newConfig.token_refresh_hour);
-    if (h >= 0 && h <= 23) {
-      config.token_refresh_hour = h;
-    }
+  if (newConfig.token_refresh_time !== undefined) {
+    config.token_refresh_time = newConfig.token_refresh_time;
   }
   if (newConfig.port !== undefined && newConfig.port !== config.port) {
     config.port = newConfig.port;

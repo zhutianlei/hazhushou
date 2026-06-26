@@ -8,8 +8,7 @@ CONFIG_PATH=/data/options.json
 HA_BASE_URL=$(bashio::config 'ha_base_url')
 HA_USERNAME=$(bashio::config 'ha_username')
 HA_PASSWORD=$(bashio::config 'ha_password')
-TOKEN_AUTO_REFRESH=$(bashio::config 'token_auto_refresh')
-TOKEN_REFRESH_HOUR=$(bashio::config 'token_refresh_hour')
+TOKEN_REFRESH_TIME=$(bashio::config 'token_refresh_time')
 PORT=$(bashio::config 'port')
 
 mkdir -p /data/ha-assistant
@@ -18,8 +17,7 @@ cat > /data/ha-assistant/config.json << EOF
   "ha_base_url": "${HA_BASE_URL}",
   "ha_username": "${HA_USERNAME}",
   "ha_password": "${HA_PASSWORD}",
-  "token_auto_refresh": ${TOKEN_AUTO_REFRESH},
-  "token_refresh_hour": ${TOKEN_REFRESH_HOUR},
+  "token_refresh_time": "${TOKEN_REFRESH_TIME}",
   "port": ${PORT},
   "password_hash": "",
   "password_salt": ""

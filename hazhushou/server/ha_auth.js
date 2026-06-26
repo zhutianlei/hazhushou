@@ -135,18 +135,19 @@ function scheduleRefresh() {
   }
 
   const config = getConfig();
-  if (!config.token_auto_refresh) {
+  const time = (config.token_refresh_time || '').trim();
+
+  if (!time || !/^\d{1,2}:\d{2}$/.test(time)) {
     console.log('[TokenRefresh] 定时刷新未启用');
     return;
   }
 
-  const hour = config.token_refresh_hour || 3;
-  console.log(`[TokenRefresh] 定时刷新已启用，每日 ${hour}:00 执行`);
+  const [hour, minute] = time.split(':').map(Number);
+  console.log(`[TokenRefresh] 定时刷新已启用，每日 ${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')} 执行`);
 
-  // Check every minute
   refreshTimer = setInterval(() => {
     const now = new Date();
-    if (now.getHours() === hour && now.getMinutes() === 0) {
+    if (now.getHours() === hour && now.getMinutes() === minute) {
       forceRefreshTokens();
     }
   }, 60 * 1000);

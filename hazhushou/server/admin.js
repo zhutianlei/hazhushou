@@ -90,14 +90,13 @@ router.get('/config', authMiddleware, (req, res) => {
     ha_base_url: config.ha_base_url,
     ha_username: config.ha_username || '',
     ha_password: config.ha_password || '',
-    token_auto_refresh: !!config.token_auto_refresh,
-    token_refresh_hour: config.token_refresh_hour || 3,
+    token_refresh_time: config.token_refresh_time || '',
     port: config.port || 8080
   });
 });
 
 router.put('/config', authMiddleware, async (req, res) => {
-  const { ha_base_url, ha_username, ha_password, token_auto_refresh, token_refresh_hour, port } = req.body;
+  const { ha_base_url, ha_username, ha_password, token_refresh_time, port } = req.body;
   const updates = {};
   if (ha_base_url !== undefined) {
     if (!ha_base_url || typeof ha_base_url !== 'string') {
@@ -111,11 +110,8 @@ router.put('/config', authMiddleware, async (req, res) => {
   if (ha_password !== undefined) {
     updates.ha_password = ha_password;
   }
-  if (token_auto_refresh !== undefined) {
-    updates.token_auto_refresh = token_auto_refresh;
-  }
-  if (token_refresh_hour !== undefined) {
-    updates.token_refresh_hour = token_refresh_hour;
+  if (token_refresh_time !== undefined) {
+    updates.token_refresh_time = token_refresh_time;
   }
   if (port !== undefined) {
     const p = parseInt(port);
@@ -128,7 +124,7 @@ router.put('/config', authMiddleware, async (req, res) => {
   await addAuditEntry({
     action: 'update_config',
     user: req.sessionUser,
-    detail: { ha_base_url, ha_username: ha_username ? '***' : undefined, token_auto_refresh, token_refresh_hour, port }
+    detail: { ha_base_url, ha_username: ha_username ? '***' : undefined, token_refresh_time, port }
   });
 
   // Auto-get tokens if credentials are provided
@@ -145,7 +141,7 @@ router.put('/config', authMiddleware, async (req, res) => {
   }
 
   // Restart scheduler if settings changed
-  if (token_auto_refresh !== undefined || token_refresh_hour !== undefined) {
+  if (token_refresh_time !== undefined) {
     scheduleRefresh();
   }
 
