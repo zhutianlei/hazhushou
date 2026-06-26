@@ -489,14 +489,6 @@
           <span class="nav-icon">&#128225;</span>
           <span>设备管理</span>
         </div>
-        <div class="nav-item" data-nav="config" onclick="switchNav('config')">
-          <span class="nav-icon">&#9881;</span>
-          <span>全局配置</span>
-        </div>
-        <div class="nav-item" data-nav="system" onclick="switchNav('system')">
-          <span class="nav-icon">&#128190;</span>
-          <span>系统设置</span>
-        </div>
         <div class="sidebar-title" style="margin-top:16px">数据</div>
         <div class="nav-item" data-nav="audit" onclick="switchNav('audit')">
           <span class="nav-icon">&#128220;</span>
@@ -535,86 +527,6 @@
                 </thead>
                 <tbody id="whitelist-body"></tbody>
               </table>
-            </div>
-          </div>
-        </div>
-
-        <div id="page-config" class="tab-content">
-          <div class="page-header">
-            <h2>全局配置</h2>
-            <p>配置 Home Assistant 连接和认证信息</p>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <div class="form-group">
-                <label>HA 基础 URL</label>
-                <input type="text" id="ha-base-url" placeholder="http://192.168.1.100:8123">
-              </div>
-              <div class="form-group">
-                <label>HA 用户名</label>
-                <input type="text" id="ha-username" placeholder="admin">
-              </div>
-              <div class="form-group">
-                <label>HA 密码</label>
-                <input type="password" id="ha-password" placeholder="HA 登录密码">
-              </div>
-              <div class="checkbox-group">
-                <input type="checkbox" id="token-auto-refresh">
-                <label for="token-auto-refresh">定时刷新 Token</label>
-              </div>
-              <div class="format-hint" style="margin-top:-16px;margin-bottom:24px">启用后每日自动刷新 access_token，避免过期</div>
-              <div id="refresh-hour-group" class="form-group" style="display:none">
-                <label>刷新时间</label>
-                <select id="token-refresh-hour">
-                  <option value="0">00:00</option>
-                  <option value="1">01:00</option>
-                  <option value="2">02:00</option>
-                  <option value="3" selected>03:00</option>
-                  <option value="4">04:00</option>
-                  <option value="5">05:00</option>
-                  <option value="6">06:00</option>
-                  <option value="7">07:00</option>
-                  <option value="8">08:00</option>
-                  <option value="9">09:00</option>
-                  <option value="10">10:00</option>
-                  <option value="11">11:00</option>
-                  <option value="12">12:00</option>
-                  <option value="13">13:00</option>
-                  <option value="14">14:00</option>
-                  <option value="15">15:00</option>
-                  <option value="16">16:00</option>
-                  <option value="17">17:00</option>
-                  <option value="18">18:00</option>
-                  <option value="19">19:00</option>
-                  <option value="20">20:00</option>
-                  <option value="21">21:00</option>
-                  <option value="22">22:00</option>
-                  <option value="23">23:00</option>
-                </select>
-                <div class="format-hint">建议选择凌晨时段（如 03:00），避免影响使用</div>
-              </div>
-              <div id="token-status" class="status-badge" style="display:none;margin-bottom:24px"></div>
-              <button class="btn btn-primary" onclick="saveConfig()">保存配置</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="page-system" class="tab-content">
-          <div class="page-header">
-            <h2>系统设置</h2>
-            <p>服务端运行参数配置</p>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <div class="form-group">
-                <label>服务端口</label>
-                <input type="number" id="system-port" placeholder="8080" min="1" max="65535">
-                <div class="format-hint">修改后需重启服务端生效，范围 1-65535</div>
-              </div>
-              <button class="btn btn-primary" onclick="saveSystemConfig()">保存并重启提示</button>
-              <div id="restart-hint" class="restart-hint" style="display:none">
-                端口已修改为 <b id="new-port"></b>，请手动重启服务端使配置生效。
-              </div>
             </div>
           </div>
         </div>
@@ -739,7 +651,6 @@
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('main-page').style.display = 'block';
         document.getElementById('current-user').textContent = data.username;
-        loadConfig();
         loadWhitelist();
       } else {
         document.getElementById('login-page').style.display = 'block';
@@ -877,96 +788,10 @@
       document.getElementById('add-modal').classList.remove('active');
     }
 
-    document.getElementById('token-auto-refresh').addEventListener('change', function() {
-      document.getElementById('refresh-hour-group').style.display = this.checked ? 'block' : 'none';
-    });
-
-    async function saveWhitelistItem() {
-      const data = {
-        ip: document.getElementById('edit-ip').value.trim(),
-        view_path: document.getElementById('edit-view-path').value.trim(),
-        width: parseInt(document.getElementById('edit-width').value) || 0,
-        height: parseInt(document.getElementById('edit-height').value) || 0
-      };
-      if (!data.ip) { alert('IP地址必填'); return; }
-
-      if (currentEdit) {
-        await fetch('/admin/whitelist/' + encodeURIComponent(currentEdit), {
-          method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
-        });
-      } else {
-        await fetch('/admin/whitelist', {
-          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
-        });
-      }
-      closeModal();
-      loadWhitelist();
-    }
-
     async function deleteItem(ip) {
       if (!confirm('确定删除 ' + ip + '？')) return;
       await fetch('/admin/whitelist/' + encodeURIComponent(ip), { method: 'DELETE' });
       loadWhitelist();
-    }
-
-    async function loadConfig() {
-      const res = await fetch('/admin/config');
-      if (res.status === 401) { checkAuth(); return; }
-      const config = await res.json();
-      document.getElementById('ha-base-url').value = config.ha_base_url || '';
-      document.getElementById('ha-username').value = config.ha_username || '';
-      document.getElementById('ha-password').value = config.ha_password || '';
-      document.getElementById('token-auto-refresh').checked = !!config.token_auto_refresh;
-      document.getElementById('token-refresh-hour').value = config.token_refresh_hour || 3;
-      document.getElementById('refresh-hour-group').style.display = config.token_auto_refresh ? 'block' : 'none';
-      document.getElementById('system-port').value = config.port || 8080;
-    }
-
-    async function saveConfig() {
-      const ha_base_url = document.getElementById('ha-base-url').value.trim();
-      const ha_username = document.getElementById('ha-username').value.trim();
-      const ha_password = document.getElementById('ha-password').value;
-      const token_auto_refresh = document.getElementById('token-auto-refresh').checked;
-      const token_refresh_hour = parseInt(document.getElementById('token-refresh-hour').value);
-      if (!ha_base_url) { alert('HA基础URL必填'); return; }
-
-      const statusEl = document.getElementById('token-status');
-      statusEl.style.display = 'none';
-
-      const res = await fetch('/admin/config', {
-        method: 'PUT',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ ha_base_url, ha_username, ha_password, token_auto_refresh, token_refresh_hour })
-      });
-      const data = await res.json();
-
-      if (data.tokenStatus === 'success') {
-        statusEl.textContent = 'Token 获取成功，终端设备可自动登录';
-        statusEl.className = 'status-badge status-success';
-        statusEl.style.display = 'inline-flex';
-      } else if (data.tokenStatus === 'failed') {
-        statusEl.textContent = 'Token 获取失败，请检查用户名和密码';
-        statusEl.className = 'status-badge status-error';
-        statusEl.style.display = 'inline-flex';
-      } else {
-        alert('配置已保存');
-      }
-      loadWhitelist();
-    }
-
-    async function saveSystemConfig() {
-      const port = parseInt(document.getElementById('system-port').value);
-      if (!port || port < 1 || port > 65535) { alert('端口范围 1-65535'); return; }
-      const res = await fetch('/admin/config', {
-        method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ port })
-      });
-      const data = await res.json();
-      if (data.needRestart) {
-        document.getElementById('new-port').textContent = port;
-        document.getElementById('restart-hint').style.display = 'block';
-      } else {
-        alert('配置已保存');
-      }
     }
 
     function showImportModal() {
