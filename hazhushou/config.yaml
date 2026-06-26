@@ -1,5 +1,5 @@
 name: "HaAssistant"
-version: "1.0.5"
+version: "1.0.6"
 slug: ha-assistant
 description: >-
   局域网终端与 Home Assistant 安全对接系统。服务端集中管控，客户端零信任。
@@ -15,7 +15,11 @@ panel_title: "HaAssistant"
 panel_admin: true
 boot: auto
 init: false
-host_network: true
+host_network: false
+ports:
+  8765/tcp: 8765
+ports_description:
+  8765/tcp: "终端 API 端口"
 map:
   - type: data
     read_only: false
