@@ -1,5 +1,5 @@
 name: "HaAssistant"
-version: "1.0.6"
+version: "1.0.7"
 slug: ha-assistant
 description: >-
   局域网终端与 Home Assistant 安全对接系统。服务端集中管控，客户端零信任。

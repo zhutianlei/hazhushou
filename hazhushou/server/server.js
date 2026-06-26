@@ -32,7 +32,11 @@ app.use('/admin', adminRoutes);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const ingressPath = req.headers['x-ingress-path'] || '';
+  const fs = require('fs');
+  let html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf-8');
+  html = html.replace('__INGRESS_PATH__', ingressPath);
+  res.type('html').send(html);
 });
 
 async function start() {
