@@ -1,5 +1,5 @@
 name: "HA助手"
-version: "1.0.9"
+version: "1.1.0"
 slug: ha-assistant
 description: >-
   网吧终端安全对接Home Assistant，实现智能化操作。
