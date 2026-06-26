@@ -25,11 +25,9 @@ options:
   ha_password: ""
   token_auto_refresh: false
   token_refresh_hour: 3
-  port: 8080
 schema:
   ha_base_url: str
   ha_username: str
   ha_password: password
   token_auto_refresh: bool
   token_refresh_hour: int(0,23)
-  port: int
