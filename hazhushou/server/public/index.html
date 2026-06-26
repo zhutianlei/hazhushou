@@ -454,32 +454,9 @@
   </style>
 </head>
 <body>
-  <div id="login-page" style="display:none">
-    <div class="login-wrapper">
-      <div class="login-card">
-        <h2>HaAssistant</h2>
-        <div id="login-error" class="login-error"></div>
-        <div class="form-group">
-          <label>用户名</label>
-          <input type="text" id="login-username" placeholder="admin" autocomplete="username">
-        </div>
-        <div class="form-group">
-          <label>密码</label>
-          <input type="password" id="login-password" placeholder="请输入密码" autocomplete="current-password">
-        </div>
-        <button class="btn btn-primary" style="width:100%" onclick="doLogin()">登录</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="main-page" style="display:none">
+  <div id="main-page">
     <div class="header">
       <h1>HaAssistant</h1>
-      <div class="header-right">
-        <span id="current-user"></span>
-        <button class="btn-link" onclick="showPasswordModal()">修改密码</button>
-        <button class="btn-link" onclick="doLogout()">退出</button>
-      </div>
     </div>
 
     <div class="layout">
@@ -601,32 +578,6 @@
     </div>
   </div>
 
-  <div id="password-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>修改密码</h2>
-        <button class="modal-close" onclick="closePasswordModal()">&times;</button>
-      </div>
-      <div id="password-error" class="login-error"></div>
-      <div class="form-group">
-        <label>旧密码</label>
-        <input type="password" id="old-password">
-      </div>
-      <div class="form-group">
-        <label>新密码</label>
-        <input type="password" id="new-password" placeholder="至少6位">
-      </div>
-      <div class="form-group">
-        <label>确认新密码</label>
-        <input type="password" id="confirm-password">
-      </div>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:32px">
-        <button class="btn btn-secondary" onclick="closePasswordModal()">取消</button>
-        <button class="btn btn-primary" onclick="doChangePassword()">确认</button>
-      </div>
-    </div>
-  </div>
-
   <script>
     const INGRESS_PATH = '__INGRESS_PATH__';
     let whitelist = [];
@@ -641,94 +592,8 @@
       if (name === 'stats') loadStats();
     }
 
-    document.getElementById('login-password').addEventListener('keydown', e => {
-      if (e.key === 'Enter') doLogin();
-    });
-
-    async function checkAuth() {
-      const res = await fetch(INGRESS_PATH + '/admin/me');
-      const data = await res.json();
-      if (data.logged_in) {
-        document.getElementById('login-page').style.display = 'none';
-        document.getElementById('main-page').style.display = 'block';
-        document.getElementById('current-user').textContent = data.username;
-        loadWhitelist();
-      } else {
-        document.getElementById('login-page').style.display = 'block';
-        document.getElementById('main-page').style.display = 'none';
-      }
-    }
-
-    async function doLogin() {
-      const username = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value;
-      const errEl = document.getElementById('login-error');
-      errEl.style.display = 'none';
-      if (!username || !password) {
-        errEl.textContent = '请输入用户名和密码';
-        errEl.style.display = 'block';
-        return;
-      }
-      const res = await fetch(INGRESS_PATH + '/admin/login', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ username, password })
-      });
-      if (res.ok) {
-        checkAuth();
-      } else {
-        const data = await res.json();
-        errEl.textContent = data.error || '登录失败';
-        errEl.style.display = 'block';
-      }
-    }
-
-    async function doLogout() {
-      await fetch(INGRESS_PATH + '/admin/logout', { method: 'POST' });
-      checkAuth();
-    }
-
-    function showPasswordModal() {
-      document.getElementById('old-password').value = '';
-      document.getElementById('new-password').value = '';
-      document.getElementById('confirm-password').value = '';
-      document.getElementById('password-error').style.display = 'none';
-      document.getElementById('password-modal').classList.add('active');
-    }
-
-    function closePasswordModal() {
-      document.getElementById('password-modal').classList.remove('active');
-    }
-
-    async function doChangePassword() {
-      const old_password = document.getElementById('old-password').value;
-      const new_password = document.getElementById('new-password').value;
-      const confirm = document.getElementById('confirm-password').value;
-      const errEl = document.getElementById('password-error');
-      errEl.style.display = 'none';
-      if (new_password !== confirm) {
-        errEl.textContent = '两次输入的新密码不一致';
-        errEl.style.display = 'block';
-        return;
-      }
-      const res = await fetch(INGRESS_PATH + '/admin/password', {
-        method: 'PUT',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ old_password, new_password })
-      });
-      if (res.ok) {
-        alert('密码已修改');
-        closePasswordModal();
-      } else {
-        const data = await res.json();
-        errEl.textContent = data.error || '修改失败';
-        errEl.style.display = 'block';
-      }
-    }
-
     async function loadWhitelist() {
       const res = await fetch(INGRESS_PATH + '/admin/whitelist');
-      if (res.status === 401) { checkAuth(); return; }
       whitelist = await res.json();
       renderWhitelist();
     }
@@ -847,7 +712,6 @@
 
     async function loadAudit() {
       const res = await fetch(INGRESS_PATH + '/admin/audit');
-      if (res.status === 401) { checkAuth(); return; }
       const log = await res.json();
       const container = document.getElementById('audit-log');
       const actionMap = { add_whitelist: '添加设备', update_whitelist: '更新设备', delete_whitelist: '删除设备', batch_import: '批量导入', update_config: '更新配置', login: '登录', change_password: '修改密码' };
@@ -865,7 +729,6 @@
 
     async function loadStats() {
       const res = await fetch(INGRESS_PATH + '/admin/stats');
-      if (res.status === 401) { checkAuth(); return; }
       const stats = await res.json();
       const grid = document.getElementById('stats-grid');
       const entries = Object.entries(stats);
@@ -879,7 +742,7 @@
       }).join('') || '<div class="empty-state">暂无连接记录</div>';
     }
 
-    checkAuth();
+    loadWhitelist();
   </script>
 </body>
 </html>

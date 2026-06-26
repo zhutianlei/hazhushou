@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { initStorage, readPortSync } = require('./storage');
 const { scheduleRefresh } = require('./ha_auth');
 const apiRoutes = require('./api');
@@ -13,19 +14,7 @@ app.use((req, res, next) => {
   next();
 });
 
-function parseCookies(req, res, next) {
-  const cookies = {};
-  const header = req.headers.cookie || '';
-  header.split(';').forEach(c => {
-    const [name, ...rest] = c.trim().split('=');
-    if (name) cookies[name] = decodeURIComponent(rest.join('='));
-  });
-  req.cookies = cookies;
-  next();
-}
-
 app.use(express.json());
-app.use(parseCookies);
 
 app.use('/api', apiRoutes);
 app.use('/admin', adminRoutes);
@@ -33,7 +22,6 @@ app.use('/static', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   const ingressPath = req.headers['x-ingress-path'] || '';
-  const fs = require('fs');
   let html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf-8');
   html = html.replace('__INGRESS_PATH__', ingressPath);
   res.type('html').send(html);
