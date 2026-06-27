@@ -202,6 +202,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
     th, td {
       padding: 16px 0;
@@ -216,6 +217,7 @@
       font-size: 12px;
       letter-spacing: -0.12px;
     }
+    th:last-child, td:last-child { text-align: right; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(0, 0, 0, 0.02); }
 
@@ -480,6 +482,14 @@
           </div>
           <div class="card-body">
             <table>
+              <colgroup>
+                <col style="width:15%">
+                <col style="width:17%">
+                <col style="width:17%">
+                <col style="width:17%">
+                <col style="width:17%">
+                <col style="width:17%">
+              </colgroup>
               <thead>
                 <tr>
                   <th>IP地址</th>
