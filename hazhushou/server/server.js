@@ -19,12 +19,25 @@ app.use(express.json());
 // API routes - accessible externally for terminal devices
 app.use('/api', apiRoutes);
 
-// Admin routes
-app.use('/admin', adminRoutes);
+// Admin routes - only accessible via HA ingress
+app.use('/admin', (req, res, next) => {
+  if (!req.headers['x-ingress-path']) {
+    return res.status(403).send('仅允许通过 HA 侧边栏访问');
+  }
+  next();
+}, adminRoutes);
 
-app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use('/static', (req, res, next) => {
+  if (!req.headers['x-ingress-path']) {
+    return res.status(403).send('Forbidden');
+  }
+  next();
+}, express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
+  if (!req.headers['x-ingress-path']) {
+    return res.status(403).send('仅允许通过 HA 侧边栏访问');
+  }
   const ingressPath = req.headers['x-ingress-path'] || '';
   let html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf-8');
   html = html.replace('__INGRESS_PATH__', ingressPath);
