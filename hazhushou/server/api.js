@@ -21,6 +21,8 @@ router.get('/terminal/pull', async (req, res) => {
     const width = entry.width || 0;
     const height = entry.height || 0;
 
+    const url = `${baseURL}${viewPath}?kiosk=true`;
+
     let ha_tokens = null;
     if (config.ha_username && config.ha_password) {
       try {
@@ -33,15 +35,10 @@ router.get('/terminal/pull', async (req, res) => {
 
     await recordConnection(clientIP);
 
-    let finalUrl = `${baseURL}${viewPath}?kiosk=true`;
-    if (ha_tokens && ha_tokens.access_token) {
-      finalUrl += `&auth_token=${ha_tokens.access_token}`;
-    }
-
     console.log(`[API] 下发配置: ${clientIP} -> ${viewPath} (${width}x${height})`);
 
     res.json({
-      url: finalUrl,
+      url,
       width,
       height,
       ha_tokens: ha_tokens ? {
