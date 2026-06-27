@@ -197,7 +197,7 @@
       font-weight: 400;
       letter-spacing: -0.224px;
     }
-    .btn-group { display: flex; gap: 8px; align-items: center; }
+    .btn-group { display: inline-flex; gap: 8px; align-items: center; }
 
     table {
       width: 100%;
@@ -788,7 +788,7 @@
           <td>${sizeDisplay}</td>
           <td style="color:#7a7a7a">${lastPull}</td>
           <td>
-            <div class="btn-group" style="justify-content:flex-end">
+            <div class="btn-group">
               <a href="${previewURL}" target="_blank" class="preview-link">预览</a>
               <button class="btn btn-secondary btn-sm" onclick="copyItem('${item.ip}')">复制</button>
               <button class="btn btn-secondary btn-sm" onclick="editItem('${item.ip}')">编辑</button>
