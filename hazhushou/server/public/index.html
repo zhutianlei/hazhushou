@@ -348,6 +348,75 @@
       color: #7a7a7a;
     }
 
+    .category-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .category-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: -0.224px;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .category-chip:hover { background: rgba(0, 0, 0, 0.02); }
+    .category-chip.active {
+      background: #0066cc;
+      color: #ffffff;
+      border-color: #0066cc;
+    }
+    .category-chip .chip-count {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    .category-chip .chip-close {
+      display: none;
+      margin-left: 2px;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+    .category-chip .chip-close:hover { opacity: 1; }
+    .category-chip:hover .chip-close { display: inline; }
+    .category-chip.active:hover .chip-close { display: inline; }
+    .category-add-btn {
+      padding: 8px 14px;
+      border-radius: 9999px;
+      font-size: 14px;
+      background: transparent;
+      color: #0066cc;
+      border: 1px dashed #0066cc;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .category-add-btn:hover { background: rgba(0, 102, 204, 0.04); }
+    .category-inline-input {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .category-inline-input input {
+      width: 120px;
+      padding: 8px 14px;
+      border: 1px solid #0066cc;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+
     @media (max-width: 768px) {
       .main-content { padding: 24px 16px; }
       .page-header h2 { font-size: 28px; }
@@ -366,6 +435,7 @@
           <h2>设备管理</h2>
           <p>管理允许访问 HA 仪表板的终端设备</p>
         </div>
+        <div class="category-bar" id="category-bar"></div>
         <div class="card">
           <div class="card-header">
             <h3>设备列表</h3>
@@ -379,6 +449,7 @@
               <thead>
                 <tr>
                   <th>IP地址</th>
+                  <th>分类</th>
                   <th>HA视图路径</th>
                   <th>窗口尺寸</th>
                   <th>最近连接</th>
@@ -402,6 +473,10 @@
       <div class="form-group">
         <label>IP地址</label>
         <input type="text" id="edit-ip" placeholder="192.168.1.100">
+      </div>
+      <div class="form-group">
+        <label>分类</label>
+        <select id="edit-category"></select>
       </div>
       <div class="form-group">
         <label>HA视图路径</label>
@@ -445,22 +520,93 @@
   <script>
     const INGRESS_PATH = '__INGRESS_PATH__';
     let whitelist = [];
+    let categories = [];
+    let activeCategory = '';
     let currentEdit = null;
+
+    async function loadCategories() {
+      const res = await fetch(INGRESS_PATH + '/admin/categories');
+      categories = await res.json();
+      renderCategoryBar();
+    }
+
+    function renderCategoryBar() {
+      const bar = document.getElementById('category-bar');
+      const counts = {};
+      counts[''] = whitelist.length;
+      for (const c of categories) counts[c] = 0;
+      for (const item of whitelist) {
+        const cat = item.category || '';
+        if (counts[cat] !== undefined) counts[cat]++;
+        else counts[cat] = 1;
+      }
+      let html = `<span class="category-chip ${activeCategory === '' ? 'active' : ''}" onclick="filterCategory('')">全部<span class="chip-count">${counts['']}</span></span>`;
+      for (const c of categories) {
+        html += `<span class="category-chip ${activeCategory === c ? 'active' : ''}" onclick="filterCategory('${c}')">${c}<span class="chip-count">${counts[c] || 0}</span><span class="chip-close" onclick="event.stopPropagation();removeCategory('${c}')">&times;</span></span>`;
+      }
+      html += `<button class="category-add-btn" onclick="showAddCategory()">+ 添加分类</button>`;
+      bar.innerHTML = html;
+    }
+
+    function filterCategory(name) {
+      activeCategory = name;
+      renderCategoryBar();
+      renderWhitelist();
+    }
+
+    function showAddCategory() {
+      const bar = document.getElementById('category-bar');
+      const btn = bar.querySelector('.category-add-btn');
+      btn.outerHTML = `<span class="category-inline-input"><input type="text" id="new-category-input" placeholder="分类名称" onkeydown="if(event.key==='Enter')addCategoryConfirm();if(event.key==='Escape')cancelAddCategory()"><button class="btn btn-primary btn-sm" onclick="addCategoryConfirm()">确定</button><button class="btn btn-secondary btn-sm" onclick="cancelAddCategory()">取消</button></span>`;
+      document.getElementById('new-category-input').focus();
+    }
+
+    async function addCategoryConfirm() {
+      const input = document.getElementById('new-category-input');
+      const name = input.value.trim();
+      if (!name) { cancelAddCategory(); return; }
+      await fetch(INGRESS_PATH + '/admin/categories', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name })
+      });
+      await loadCategories();
+    }
+
+    function cancelAddCategory() {
+      renderCategoryBar();
+    }
+
+    async function removeCategory(name) {
+      if (!confirm(`删除分类「${name}」？该分类下的设备将变为未分类。`)) return;
+      await fetch(INGRESS_PATH + '/admin/categories/' + encodeURIComponent(name), { method: 'DELETE' });
+      if (activeCategory === name) activeCategory = '';
+      await loadCategories();
+      renderWhitelist();
+    }
+
+    function populateCategorySelect(selected) {
+      const sel = document.getElementById('edit-category');
+      sel.innerHTML = '<option value="">未分类</option>' +
+        categories.map(c => `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`).join('');
+    }
 
     async function loadWhitelist() {
       const res = await fetch(INGRESS_PATH + '/admin/whitelist');
       whitelist = await res.json();
+      await loadCategories();
       renderWhitelist();
     }
 
     function renderWhitelist() {
       const tbody = document.getElementById('whitelist-body');
-      tbody.innerHTML = whitelist.map(item => {
+      const filtered = activeCategory === '' ? whitelist : whitelist.filter(i => (i.category || '') === activeCategory);
+      tbody.innerHTML = filtered.map(item => {
         const sizeDisplay = (item.width && item.height) ? `${item.width}x${item.height}` : '全屏';
         const lastPull = item.lastPull ? new Date(item.lastPull).toLocaleString('zh-CN') : '从未连接';
         const previewURL = buildPreviewURL(item);
+        const cat = item.category || '-';
         return `<tr>
           <td><strong>${item.ip}</strong></td>
+          <td style="color:#7a7a7a">${cat}</td>
           <td>${item.view_path || '-'}</td>
           <td>${sizeDisplay}</td>
           <td style="color:#7a7a7a">${lastPull}</td>
@@ -472,7 +618,7 @@
             </div>
           </td>
         </tr>`;
-      }).join('') || '<tr><td colspan="5" class="empty-state">暂无设备，点击「添加设备」开始</td></tr>';
+      }).join('') || '<tr><td colspan="6" class="empty-state">暂无设备，点击「添加设备」开始</td></tr>';
     }
 
     function buildPreviewURL(item) {
@@ -486,6 +632,7 @@
       document.getElementById('modal-title').textContent = '添加设备';
       document.getElementById('edit-ip').value = '';
       document.getElementById('edit-ip').disabled = false;
+      populateCategorySelect(activeCategory);
       document.getElementById('edit-view-path').value = '';
       document.getElementById('edit-width').value = '';
       document.getElementById('edit-height').value = '';
@@ -499,6 +646,7 @@
       document.getElementById('modal-title').textContent = '编辑设备';
       document.getElementById('edit-ip').value = item.ip;
       document.getElementById('edit-ip').disabled = true;
+      populateCategorySelect(item.category || '');
       document.getElementById('edit-view-path').value = item.view_path || '';
       document.getElementById('edit-width').value = item.width || '';
       document.getElementById('edit-height').value = item.height || '';
@@ -512,6 +660,7 @@
     async function saveWhitelistItem() {
       const data = {
         ip: document.getElementById('edit-ip').value.trim(),
+        category: document.getElementById('edit-category').value,
         view_path: document.getElementById('edit-view-path').value.trim(),
         width: parseInt(document.getElementById('edit-width').value) || 0,
         height: parseInt(document.getElementById('edit-height').value) || 0

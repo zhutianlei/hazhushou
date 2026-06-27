@@ -5,7 +5,8 @@ const {
   getConfig, updateConfig,
   getWhitelist, addWhitelistItem, updateWhitelistItem, deleteWhitelistItem, batchImport,
   getAuditLog, addAuditEntry,
-  getConnectionStats
+  getConnectionStats,
+  getCategories, addCategory, renameCategory, deleteCategory
 } = require('./storage');
 const { getHaTokens, scheduleRefresh } = require('./ha_auth');
 
@@ -74,10 +75,10 @@ router.get('/whitelist', (req, res) => {
 });
 
 router.post('/whitelist', async (req, res) => {
-  const { ip, view_path, width, height } = req.body;
+  const { ip, view_path, width, height, category } = req.body;
   if (!ip) return res.status(400).json({ error: 'IP 必填' });
 
-  const item = { ip, view_path: view_path || '', width: width || 0, height: height || 0 };
+  const item = { ip, view_path: view_path || '', width: width || 0, height: height || 0, category: category || '' };
   await addWhitelistItem(item);
   await addAuditEntry({ action: 'add_whitelist', user: 'admin', detail: { ip, view_path } });
   res.json(item);
@@ -116,6 +117,35 @@ router.get('/audit', (req, res) => {
 
 router.get('/stats', (req, res) => {
   res.json(getConnectionStats());
+});
+
+router.get('/categories', (req, res) => {
+  res.json(getCategories());
+});
+
+router.post('/categories', async (req, res) => {
+  const { name } = req.body;
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: '分类名称必填' });
+  }
+  const ok = await addCategory(name.trim());
+  if (!ok) return res.status(400).json({ error: '分类已存在' });
+  res.json({ success: true });
+});
+
+router.put('/categories', async (req, res) => {
+  const { oldName, newName } = req.body;
+  if (!oldName || !newName) return res.status(400).json({ error: '参数不完整' });
+  const ok = await renameCategory(oldName, newName.trim());
+  if (!ok) return res.status(400).json({ error: '重命名失败，分类不存在或新名称已存在' });
+  res.json({ success: true });
+});
+
+router.delete('/categories/:name', async (req, res) => {
+  const { name } = req.params;
+  const ok = await deleteCategory(decodeURIComponent(name));
+  if (!ok) return res.status(404).json({ error: '分类不存在' });
+  res.json({ success: true });
 });
 
 module.exports = router;

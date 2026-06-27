@@ -9,10 +9,12 @@ const DATA_DIR = isAddon ? '/data/ha-assistant' : path.join(__dirname, 'data');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const WHITELIST_FILE = path.join(DATA_DIR, 'whitelist.json');
 const AUDIT_FILE = path.join(DATA_DIR, 'audit.json');
+const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
 
 let config = { port: 8080, ha_base_url: 'http://192.168.1.100:8123', username: 'admin', password_hash: '', password_salt: '' };
 let whitelist = [];
 let audit = [];
+let categories = [];
 
 async function ensureDir(dir) {
   try {
@@ -71,6 +73,7 @@ async function initStorage() {
   config = await readJSON(CONFIG_FILE, config);
   whitelist = await readJSON(WHITELIST_FILE, whitelist);
   audit = await readJSON(AUDIT_FILE, audit);
+  categories = await readJSON(CATEGORIES_FILE, categories);
   if (!config.password_hash) {
     await changePassword('admin');
     console.log(`[Storage] 默认账号: admin / admin (请立即修改密码)`);
@@ -81,6 +84,7 @@ async function initStorage() {
   await saveConfig();
   await saveWhitelist();
   await saveAudit();
+  await saveCategories();
   console.log(`[Storage] 数据目录: ${DATA_DIR}`);
   console.log(`[Storage] 白名单记录: ${whitelist.length} 条`);
 }
@@ -95,6 +99,10 @@ async function saveWhitelist() {
 
 async function saveAudit() {
   await writeJSON(AUDIT_FILE, audit);
+}
+
+async function saveCategories() {
+  await writeJSON(CATEGORIES_FILE, categories);
 }
 
 function getConfig() {
@@ -207,6 +215,43 @@ async function recordConnection(ip) {
   }
 }
 
+function getCategories() {
+  return categories;
+}
+
+async function addCategory(name) {
+  if (!name || categories.includes(name)) return false;
+  categories.push(name);
+  await saveCategories();
+  return true;
+}
+
+async function renameCategory(oldName, newName) {
+  if (!oldName || !newName || oldName === newName) return false;
+  const idx = categories.indexOf(oldName);
+  if (idx === -1) return false;
+  if (categories.includes(newName)) return false;
+  categories[idx] = newName;
+  for (const item of whitelist) {
+    if (item.category === oldName) item.category = newName;
+  }
+  await saveCategories();
+  await saveWhitelist();
+  return true;
+}
+
+async function deleteCategory(name) {
+  const idx = categories.indexOf(name);
+  if (idx === -1) return false;
+  categories.splice(idx, 1);
+  for (const item of whitelist) {
+    if (item.category === name) item.category = '';
+  }
+  await saveCategories();
+  await saveWhitelist();
+  return true;
+}
+
 module.exports = {
   initStorage,
   readPortSync,
@@ -224,5 +269,9 @@ module.exports = {
   recordConnection,
   verifyPassword,
   changePassword,
-  getUsername
+  getUsername,
+  getCategories,
+  addCategory,
+  renameCategory,
+  deleteCategory
 };
