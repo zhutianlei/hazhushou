@@ -373,15 +373,17 @@
 
     .category-bar {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
       align-items: center;
       margin-bottom: 24px;
     }
-    .category-chip {
+    .cat-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .cat-dropdown-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       padding: 8px 16px;
       border-radius: 9999px;
       font-size: 14px;
@@ -394,15 +396,47 @@
       user-select: none;
       -webkit-font-smoothing: antialiased;
     }
-    .category-chip:hover { background: rgba(0, 0, 0, 0.02); }
-    .category-chip.active {
-      background: #0066cc;
-      color: #ffffff;
-      border-color: #0066cc;
+    .cat-dropdown-btn:hover { background: rgba(0, 0, 0, 0.02); }
+    .cat-dropdown-btn .arrow {
+      font-size: 10px;
+      opacity: 0.5;
+      transition: transform 0.2s;
     }
-    .category-chip .chip-count {
+    .cat-dropdown.open .cat-dropdown-btn .arrow { transform: rotate(180deg); }
+    .cat-dropdown-btn .cat-label { color: #7a7a7a; margin-right: 2px; }
+    .cat-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 180px;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      z-index: 60;
+      padding: 6px 0;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .cat-dropdown.open .cat-dropdown-menu { display: block; }
+    .cat-dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .cat-dropdown-item:hover { background: rgba(0, 0, 0, 0.03); }
+    .cat-dropdown-item.active {
+      color: #0066cc;
+      font-weight: 600;
+    }
+    .cat-dropdown-item .item-count {
       font-size: 12px;
-      opacity: 0.6;
+      color: #7a7a7a;
     }
 
     .cat-list { list-style: none; }
@@ -686,18 +720,39 @@
         if (counts[cat] !== undefined) counts[cat]++;
         else counts[cat] = 1;
       }
-      let html = `<span class="category-chip ${activeCategory === '' ? 'active' : ''}" onclick="filterCategory('')">全部<span class="chip-count">${counts['']}</span></span>`;
+      const activeName = activeCategory === '' ? '全部' : activeCategory;
+      const activeCount = counts[activeCategory] || 0;
+      let menuItems = `<div class="cat-dropdown-item ${activeCategory === '' ? 'active' : ''}" onclick="selectCategory('')">全部<span class="item-count">${counts['']}</span></div>`;
       for (const c of categories) {
-        html += `<span class="category-chip ${activeCategory === c ? 'active' : ''}" onclick="filterCategory('${c}')">${c}<span class="chip-count">${counts[c] || 0}</span></span>`;
+        menuItems += `<div class="cat-dropdown-item ${activeCategory === c ? 'active' : ''}" onclick="selectCategory('${c}')">${c}<span class="item-count">${counts[c] || 0}</span></div>`;
       }
-      bar.innerHTML = html;
+      bar.innerHTML = `<div class="cat-dropdown" id="cat-dropdown">
+        <div class="cat-dropdown-btn" onclick="toggleCatDropdown(event)">
+          <span class="cat-label">分类</span>
+          <span>${activeName}</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="cat-dropdown-menu">${menuItems}</div>
+      </div>`;
     }
 
-    function filterCategory(name) {
+    function toggleCatDropdown(e) {
+      e.stopPropagation();
+      const dd = document.getElementById('cat-dropdown');
+      dd.classList.toggle('open');
+    }
+
+    function selectCategory(name) {
       activeCategory = name;
+      document.getElementById('cat-dropdown').classList.remove('open');
       renderCategoryBar();
       renderWhitelist();
     }
+
+    document.addEventListener('click', () => {
+      const dd = document.getElementById('cat-dropdown');
+      if (dd) dd.classList.remove('open');
+    });
 
     async function removeCategory(name) {
       if (!confirm(`删除分类「${name}」？该分类下的设备将变为未分类。`)) return;
