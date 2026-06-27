@@ -380,42 +380,53 @@
       font-size: 12px;
       opacity: 0.6;
     }
-    .category-chip .chip-close {
-      display: none;
-      margin-left: 2px;
-      font-size: 16px;
-      line-height: 1;
-      cursor: pointer;
-      opacity: 0.5;
-    }
-    .category-chip .chip-close:hover { opacity: 1; }
-    .category-chip:hover .chip-close { display: inline; }
-    .category-chip.active:hover .chip-close { display: inline; }
-    .category-add-btn {
-      padding: 8px 14px;
-      border-radius: 9999px;
-      font-size: 14px;
-      background: transparent;
-      color: #0066cc;
-      border: 1px dashed #0066cc;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .category-add-btn:hover { background: rgba(0, 102, 204, 0.04); }
-    .category-inline-input {
-      display: inline-flex;
+
+    .cat-list { list-style: none; }
+    .cat-item {
+      display: flex;
       align-items: center;
-      gap: 4px;
-    }
-    .category-inline-input input {
-      width: 120px;
-      padding: 8px 14px;
-      border: 1px solid #0066cc;
-      border-radius: 9999px;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
       font-size: 14px;
+    }
+    .cat-item:last-child { border-bottom: none; }
+    .cat-name {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .cat-name-input {
+      flex: 1;
+      padding: 6px 12px;
+      border: 1px solid #0066cc;
+      border-radius: 8px;
+      font-size: 15px;
       font-family: inherit;
       outline: none;
     }
+    .cat-count {
+      font-size: 12px;
+      color: #7a7a7a;
+      min-width: 40px;
+      text-align: center;
+    }
+    .cat-add-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 16px 0 0;
+    }
+    .cat-add-row input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 9999px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+    }
+    .cat-add-row input:focus { border-color: #0066cc; }
 
     @media (max-width: 768px) {
       .main-content { padding: 24px 16px; }
@@ -435,13 +446,25 @@
           <h2>设备管理</h2>
           <p>管理允许访问 HA 仪表板的终端设备</p>
         </div>
+        <div class="card" id="cat-manage-card">
+          <div class="card-header">
+            <h3>分类管理</h3>
+          </div>
+          <div class="card-body">
+            <ul class="cat-list" id="cat-list"></ul>
+            <div class="cat-add-row">
+              <input type="text" id="cat-add-input" placeholder="新分类名称" onkeydown="if(event.key==='Enter')addCatFromInput()">
+              <button class="btn btn-primary btn-sm" onclick="addCatFromInput()">添加</button>
+            </div>
+          </div>
+        </div>
         <div class="category-bar" id="category-bar"></div>
         <div class="card">
           <div class="card-header">
             <h3>设备列表</h3>
             <div class="btn-group">
               <button class="btn btn-primary btn-sm" onclick="showAddModal()">添加设备</button>
-              <button class="btn btn-secondary btn-sm" onclick="showRangeModal()">批量添加IP段</button>
+              <button class="btn btn-secondary btn-sm" onclick="showRangeModal()">批量添加</button>
               <button class="btn btn-secondary btn-sm" onclick="showImportModal()">批量导入</button>
             </div>
           </div>
@@ -575,6 +598,68 @@
       const res = await fetch(INGRESS_PATH + '/admin/categories');
       categories = await res.json();
       renderCategoryBar();
+      renderCatManage();
+    }
+
+    function renderCatManage() {
+      const list = document.getElementById('cat-list');
+      const counts = {};
+      for (const c of categories) counts[c] = 0;
+      for (const item of whitelist) {
+        const cat = item.category || '';
+        if (counts[cat] !== undefined) counts[cat]++;
+      }
+      list.innerHTML = categories.map(c =>
+        `<li class="cat-item" data-cat="${c}">
+          <span class="cat-name">${c}</span>
+          <span class="cat-count">${counts[c] || 0} 台</span>
+          <button class="btn btn-secondary btn-sm" onclick="startRenameCat('${c}')">重命名</button>
+          <button class="btn btn-danger btn-sm" onclick="removeCategory('${c}')">删除</button>
+        </li>`
+      ).join('') || '<li style="padding:16px 0;color:#7a7a7a;font-size:14px">暂无分类</li>';
+    }
+
+    async function addCatFromInput() {
+      const input = document.getElementById('cat-add-input');
+      const name = input.value.trim();
+      if (!name) return;
+      const res = await fetch(INGRESS_PATH + '/admin/categories', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || '添加失败');
+        return;
+      }
+      input.value = '';
+      await loadCategories();
+    }
+
+    function startRenameCat(oldName) {
+      const li = document.querySelector(`.cat-item[data-cat="${oldName}"]`);
+      if (!li) return;
+      const nameSpan = li.querySelector('.cat-name');
+      const countSpan = li.querySelector('.cat-count');
+      const btns = li.querySelectorAll('.btn');
+      nameSpan.outerHTML = `<input class="cat-name-input" value="${oldName}" onkeydown="if(event.key==='Enter')saveRenameCat('${oldName}',this);if(event.key==='Escape')renderCatManage()">`;
+      btns[0].outerHTML = `<button class="btn btn-primary btn-sm" onclick="saveRenameCat('${oldName}',this.previousElementSibling)">保存</button>`;
+      btns[1].outerHTML = `<button class="btn btn-secondary btn-sm" onclick="renderCatManage()">取消</button>`;
+      li.querySelector('.cat-name-input').focus();
+    }
+
+    async function saveRenameCat(oldName, inputEl) {
+      const newName = inputEl.value.trim();
+      if (!newName || newName === oldName) { renderCatManage(); return; }
+      const res = await fetch(INGRESS_PATH + '/admin/categories', {
+        method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ oldName, newName })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || '重命名失败');
+        return;
+      }
+      if (activeCategory === oldName) activeCategory = newName;
+      await loadWhitelist();
     }
 
     function renderCategoryBar() {
@@ -589,9 +674,8 @@
       }
       let html = `<span class="category-chip ${activeCategory === '' ? 'active' : ''}" onclick="filterCategory('')">全部<span class="chip-count">${counts['']}</span></span>`;
       for (const c of categories) {
-        html += `<span class="category-chip ${activeCategory === c ? 'active' : ''}" onclick="filterCategory('${c}')">${c}<span class="chip-count">${counts[c] || 0}</span><span class="chip-close" onclick="event.stopPropagation();removeCategory('${c}')">&times;</span></span>`;
+        html += `<span class="category-chip ${activeCategory === c ? 'active' : ''}" onclick="filterCategory('${c}')">${c}<span class="chip-count">${counts[c] || 0}</span></span>`;
       }
-      html += `<button class="category-add-btn" onclick="showAddCategory()">+ 添加分类</button>`;
       bar.innerHTML = html;
     }
 
@@ -599,27 +683,6 @@
       activeCategory = name;
       renderCategoryBar();
       renderWhitelist();
-    }
-
-    function showAddCategory() {
-      const bar = document.getElementById('category-bar');
-      const btn = bar.querySelector('.category-add-btn');
-      btn.outerHTML = `<span class="category-inline-input"><input type="text" id="new-category-input" placeholder="分类名称" onkeydown="if(event.key==='Enter')addCategoryConfirm();if(event.key==='Escape')cancelAddCategory()"><button class="btn btn-primary btn-sm" onclick="addCategoryConfirm()">确定</button><button class="btn btn-secondary btn-sm" onclick="cancelAddCategory()">取消</button></span>`;
-      document.getElementById('new-category-input').focus();
-    }
-
-    async function addCategoryConfirm() {
-      const input = document.getElementById('new-category-input');
-      const name = input.value.trim();
-      if (!name) { cancelAddCategory(); return; }
-      await fetch(INGRESS_PATH + '/admin/categories', {
-        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name })
-      });
-      await loadCategories();
-    }
-
-    function cancelAddCategory() {
-      renderCategoryBar();
     }
 
     async function removeCategory(name) {
