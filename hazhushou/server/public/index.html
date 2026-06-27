@@ -55,66 +55,14 @@
     .btn-link:hover { text-decoration: underline; }
 
     .layout {
-      display: flex;
       margin-top: 44px;
       min-height: calc(100vh - 44px);
     }
 
-    .sidebar {
-      width: 240px;
-      background: #ffffff;
-      border-right: 1px solid #e0e0e0;
-      padding: 24px 0;
-      position: fixed;
-      top: 44px;
-      bottom: 0;
-      left: 0;
-      overflow-y: auto;
-    }
-    .sidebar-title {
-      padding: 0 24px 16px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #7a7a7a;
-      letter-spacing: -0.12px;
-      text-transform: uppercase;
-    }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 24px;
-      font-size: 14px;
-      font-weight: 400;
-      color: #1d1d1f;
-      cursor: pointer;
-      letter-spacing: -0.224px;
-      transition: all 0.15s;
-      border-left: 3px solid transparent;
-    }
-    .nav-item:hover {
-      background: rgba(0, 0, 0, 0.02);
-    }
-    .nav-item.active {
-      color: #0066cc;
-      background: rgba(0, 102, 204, 0.04);
-      border-left-color: #0066cc;
-      font-weight: 600;
-    }
-    .nav-icon {
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-
     .main-content {
-      flex: 1;
-      margin-left: 240px;
       padding: 32px 48px;
       max-width: 1200px;
+      margin: 0 auto;
     }
 
     .page-header {
@@ -130,9 +78,6 @@
       font-size: 17px;
       color: #7a7a7a;
     }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
 
     .card {
       background: #ffffff;
@@ -263,49 +208,6 @@
       font-size: 14px;
     }
     .preview-link:hover { text-decoration: underline; }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-    .stat-card {
-      background: #ffffff;
-      padding: 24px;
-      border-radius: 18px;
-      border: 1px solid #e0e0e0;
-    }
-    .stat-card .ip {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.374px;
-    }
-    .stat-card .time {
-      font-size: 14px;
-      color: #7a7a7a;
-      margin-top: 8px;
-      letter-spacing: -0.224px;
-    }
-
-    .audit-item {
-      padding: 16px 0;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 14px;
-      letter-spacing: -0.224px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .audit-item:last-child { border-bottom: none; }
-    .audit-time {
-      color: #7a7a7a;
-      font-size: 12px;
-      letter-spacing: -0.12px;
-      min-width: 140px;
-    }
-    .audit-action {
-      font-weight: 600;
-    }
 
     .modal {
       display: none;
@@ -447,8 +349,7 @@
     }
 
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { margin-left: 0; padding: 24px 16px; }
+      .main-content { padding: 24px 16px; }
       .page-header h2 { font-size: 28px; }
     }
   </style>
@@ -460,70 +361,33 @@
     </div>
 
     <div class="layout">
-      <nav class="sidebar">
-        <div class="sidebar-title">管理</div>
-        <div class="nav-item active" data-nav="devices" onclick="switchNav('devices')">
-          <span class="nav-icon">&#128225;</span>
-          <span>设备管理</span>
-        </div>
-        <div class="sidebar-title" style="margin-top:16px">数据</div>
-        <div class="nav-item" data-nav="audit" onclick="switchNav('audit')">
-          <span class="nav-icon">&#128220;</span>
-          <span>操作审计</span>
-        </div>
-        <div class="nav-item" data-nav="stats" onclick="switchNav('stats')">
-          <span class="nav-icon">&#128200;</span>
-          <span>连接统计</span>
-        </div>
-      </nav>
-
       <div class="main-content">
-        <div id="page-devices" class="tab-content active">
-          <div class="page-header">
-            <h2>设备管理</h2>
-            <p>管理允许访问 HA 仪表板的终端设备</p>
-          </div>
-          <div class="card">
-            <div class="card-header">
-              <h3>设备列表</h3>
-              <div class="btn-group">
-                <button class="btn btn-primary btn-sm" onclick="showAddModal()">添加设备</button>
-                <button class="btn btn-secondary btn-sm" onclick="showImportModal()">批量导入</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <table>
-                <thead>
-                  <tr>
-                    <th>IP地址</th>
-                    <th>HA视图路径</th>
-                    <th>窗口尺寸</th>
-                    <th>最近连接</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody id="whitelist-body"></tbody>
-              </table>
+        <div class="page-header">
+          <h2>设备管理</h2>
+          <p>管理允许访问 HA 仪表板的终端设备</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>设备列表</h3>
+            <div class="btn-group">
+              <button class="btn btn-primary btn-sm" onclick="showAddModal()">添加设备</button>
+              <button class="btn btn-secondary btn-sm" onclick="showImportModal()">批量导入</button>
             </div>
           </div>
-        </div>
-
-        <div id="page-audit" class="tab-content">
-          <div class="page-header">
-            <h2>操作审计</h2>
-            <p>系统操作记录追踪</p>
+          <div class="card-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>IP地址</th>
+                  <th>HA视图路径</th>
+                  <th>窗口尺寸</th>
+                  <th>最近连接</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="whitelist-body"></tbody>
+            </table>
           </div>
-          <div class="card">
-            <div class="card-body" id="audit-log"></div>
-          </div>
-        </div>
-
-        <div id="page-stats" class="tab-content">
-          <div class="page-header">
-            <h2>连接统计</h2>
-            <p>终端设备连接状态概览</p>
-          </div>
-          <div class="stats-grid" id="stats-grid"></div>
         </div>
       </div>
     </div>
@@ -582,15 +446,6 @@
     const INGRESS_PATH = '__INGRESS_PATH__';
     let whitelist = [];
     let currentEdit = null;
-
-    function switchNav(name) {
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.querySelector(`.nav-item[data-nav="${name}"]`).classList.add('active');
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.getElementById('page-' + name).classList.add('active');
-      if (name === 'audit') loadAudit();
-      if (name === 'stats') loadStats();
-    }
 
     async function loadWhitelist() {
       const res = await fetch(INGRESS_PATH + '/admin/whitelist');
@@ -708,38 +563,6 @@
       alert(`导入完成: 新增 ${result.imported} 条, 更新 ${result.updated} 条`);
       closeImportModal();
       loadWhitelist();
-    }
-
-    async function loadAudit() {
-      const res = await fetch(INGRESS_PATH + '/admin/audit');
-      const log = await res.json();
-      const container = document.getElementById('audit-log');
-      const actionMap = { add_whitelist: '添加设备', update_whitelist: '更新设备', delete_whitelist: '删除设备', batch_import: '批量导入', update_config: '更新配置', login: '登录', change_password: '修改密码' };
-      container.innerHTML = log.slice().reverse().map(entry => {
-        const time = new Date(entry.timestamp).toLocaleString('zh-CN');
-        const action = actionMap[entry.action] || entry.action;
-        return `<div class="audit-item">
-          <span class="audit-time">${time}</span>
-          <span>${entry.user || 'admin'}</span>
-          <span class="audit-action">${action}</span>
-          <span style="color:#7a7a7a">${entry.detail?.ip || entry.detail?.ha_base_url || ''}</span>
-        </div>`;
-      }).join('') || '<div class="empty-state">暂无审计记录</div>';
-    }
-
-    async function loadStats() {
-      const res = await fetch(INGRESS_PATH + '/admin/stats');
-      const stats = await res.json();
-      const grid = document.getElementById('stats-grid');
-      const entries = Object.entries(stats);
-      grid.innerHTML = entries.map(([ip, data]) => {
-        const lastPull = data.lastPull ? new Date(data.lastPull).toLocaleString('zh-CN') : '从未连接';
-        return `<div class="stat-card">
-          <div class="ip">${ip}</div>
-          <div class="time">最近连接: ${lastPull}</div>
-          <div class="time">连接次数: ${data.pullCount}</div>
-        </div>`;
-      }).join('') || '<div class="empty-state">暂无连接记录</div>';
     }
 
     loadWhitelist();
