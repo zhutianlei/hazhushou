@@ -6,7 +6,7 @@ const {
   getWhitelist, addWhitelistItem, updateWhitelistItem, deleteWhitelistItem, batchImport,
   getAuditLog, addAuditEntry,
   getConnectionStats,
-  getCategories, addCategory, renameCategory, deleteCategory
+  getCategories, addCategory, renameCategory, deleteCategory, reorderCategories
 } = require('./storage');
 const { getHaTokens, scheduleRefresh } = require('./ha_auth');
 
@@ -145,6 +145,13 @@ router.delete('/categories/:name', async (req, res) => {
   const { name } = req.params;
   const ok = await deleteCategory(decodeURIComponent(name));
   if (!ok) return res.status(404).json({ error: '分类不存在' });
+  res.json({ success: true });
+});
+
+router.put('/categories/reorder', async (req, res) => {
+  const { order } = req.body;
+  if (!Array.isArray(order)) return res.status(400).json({ error: '参数格式错误' });
+  await reorderCategories(order);
   res.json({ success: true });
 });
 

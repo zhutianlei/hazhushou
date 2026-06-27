@@ -252,6 +252,11 @@ async function deleteCategory(name) {
   return true;
 }
 
+async function reorderCategories(order) {
+  categories = order.filter(c => categories.includes(c));
+  await saveCategories();
+}
+
 module.exports = {
   initStorage,
   readPortSync,
@@ -273,5 +278,6 @@ module.exports = {
   getCategories,
   addCategory,
   renameCategory,
-  deleteCategory
+  deleteCategory,
+  reorderCategories
 };
