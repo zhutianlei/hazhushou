@@ -22,21 +22,21 @@ app.use('/api', apiRoutes);
 // Admin routes - only accessible via HA ingress
 app.use('/admin', (req, res, next) => {
   if (!req.headers['x-ingress-path']) {
-    return res.status(403).send('仅允许通过 HA 侧边栏访问');
+    return res.status(404).send('页面不存在');
   }
   next();
 }, adminRoutes);
 
 app.use('/static', (req, res, next) => {
   if (!req.headers['x-ingress-path']) {
-    return res.status(403).send('Forbidden');
+    return res.status(404).send('页面不存在');
   }
   next();
 }, express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   if (!req.headers['x-ingress-path']) {
-    return res.status(403).send('仅允许通过 HA 侧边栏访问');
+    return res.status(404).send('页面不存在');
   }
   const ingressPath = req.headers['x-ingress-path'] || '';
   let html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf-8');
