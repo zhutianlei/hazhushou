@@ -1,4 +1,4 @@
-# HaAssistant
+# HA助手
 
 Home Assistant Add-on：局域网终端与 HA 安全对接系统。
 
@@ -6,21 +6,23 @@ Home Assistant Add-on：局域网终端与 HA 安全对接系统。
 
 ## 功能
 
-- **设备白名单** — 按 IP 授权终端，支持批量导入
+- **设备白名单** — 按 IP 授权终端，支持分类管理
+- **分类管理** — 创建、重命名、删除分类，按分类筛选设备
+- **批量添加** — 通过 IP 段批量创建设备
+- **复制设备** — 基于已有设备快速复制并修改
 - **Token 自动管理** — 通过 HA Auth API 自动获取 access_token / refresh_token
 - **定时刷新** — 可配置每日定时刷新，避免 Token 过期
 - **自动登录** — 终端通过 localStorage 注入 Token 实现免登录
 - **窗口控制** — 按设备设置窗口宽高，支持全屏 Kiosk 模式
-- **操作审计** — 记录所有配置变更和连接统计
 - **Apple 风格 UI** — 管理面板采用 Apple Design Language
 
 ## 安装
 
 1. 在 HA 中添加自定义 Add-on 仓库：
    ```
-   https://github.com/zhutianlei/haassistant
+   https://github.com/zhutianlei/hazhushou
    ```
-2. 安装「HaAssistant」
+2. 安装「HA助手」
 3. 在配置中填写 HA 地址和凭据
 4. 启动后通过 HA 侧边栏访问管理面板
 
@@ -31,8 +33,8 @@ Home Assistant Add-on：局域网终端与 HA 安全对接系统。
 | `ha_base_url` | Home Assistant 地址 | `http://homeassistant.local:8123` |
 | `ha_username` | HA 登录用户名 | — |
 | `ha_password` | HA 登录密码 | — |
-| `token_auto_refresh` | 启用定时刷新 | `false` |
-| `token_refresh_hour` | 刷新时间（0-23） | `3` |
+| `token_refresh_time` | 定时刷新时间 `HH:MM`，留空禁用 | — |
+| `port` | 服务端口 | `8765` |
 
 ## API
 
@@ -52,12 +54,9 @@ GET /api/terminal/pull
 
 默认账号：`admin` / `admin`（首次启动自动创建）
 
-功能模块：
-- **设备管理** — 增删改查终端设备，支持批量导入
-- **全局配置** — HA 地址、凭据、Token 刷新策略
-- **系统设置** — 端口配置
-- **操作审计** — 配置变更记录
-- **连接统计** — 各终端最近连接时间和次数
+功能：
+- **设备管理** — 增删改查终端设备，支持分类、批量添加、复制
+- **分类管理** — 创建和管理设备分类，支持重命名和删除
 
 ## 数据持久化
 
