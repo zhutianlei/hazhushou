@@ -6,6 +6,11 @@
   <title>HaAssistant - 管理面板</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
       background: #f5f5f7;
@@ -13,6 +18,11 @@
       font-size: 17px;
       line-height: 1.47;
       letter-spacing: -0.374px;
+    }
+    input, select, textarea, button {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
     }
 
     .header {
@@ -28,6 +38,7 @@
       left: 0;
       right: 0;
       z-index: 50;
+      -webkit-font-smoothing: antialiased;
     }
     .header h1 {
       font-size: 12px;
@@ -85,6 +96,10 @@
       border: 1px solid #e0e0e0;
       margin-bottom: 24px;
       overflow: hidden;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
     }
     .card-header {
       padding: 24px 24px 0;
@@ -131,6 +146,7 @@
     }
     .form-group select {
       appearance: none;
+      -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231d1d1f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 16px center;
@@ -156,6 +172,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      -webkit-font-smoothing: antialiased;
     }
     .btn:active { transform: scale(0.95); }
     .btn-primary {
@@ -233,6 +250,10 @@
       padding: 32px;
       max-height: 90vh;
       overflow-y: auto;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
     }
     .modal-header {
       display: flex;
@@ -369,6 +390,7 @@
       cursor: pointer;
       transition: all 0.15s;
       user-select: none;
+      -webkit-font-smoothing: antialiased;
     }
     .category-chip:hover { background: rgba(0, 0, 0, 0.02); }
     .category-chip.active {
