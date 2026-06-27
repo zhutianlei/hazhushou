@@ -446,18 +446,6 @@
           <h2>设备管理</h2>
           <p>管理允许访问 HA 仪表板的终端设备</p>
         </div>
-        <div class="card" id="cat-manage-card">
-          <div class="card-header">
-            <h3>分类管理</h3>
-          </div>
-          <div class="card-body">
-            <ul class="cat-list" id="cat-list"></ul>
-            <div class="cat-add-row">
-              <input type="text" id="cat-add-input" placeholder="新分类名称" onkeydown="if(event.key==='Enter')addCatFromInput()">
-              <button class="btn btn-primary btn-sm" onclick="addCatFromInput()">添加</button>
-            </div>
-          </div>
-        </div>
         <div class="category-bar" id="category-bar"></div>
         <div class="card">
           <div class="card-header">
@@ -465,7 +453,7 @@
             <div class="btn-group">
               <button class="btn btn-primary btn-sm" onclick="showAddModal()">添加设备</button>
               <button class="btn btn-secondary btn-sm" onclick="showRangeModal()">批量添加</button>
-              <button class="btn btn-secondary btn-sm" onclick="showImportModal()">批量导入</button>
+              <button class="btn btn-secondary btn-sm" onclick="showCatModal()">分类管理</button>
             </div>
           </div>
           <div class="card-body">
@@ -521,22 +509,16 @@
     </div>
   </div>
 
-  <div id="import-modal" class="modal">
+  <div id="cat-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>批量导入</h2>
-        <button class="modal-close" onclick="closeImportModal()">&times;</button>
+        <h2>分类管理</h2>
+        <button class="modal-close" onclick="closeCatModal()">&times;</button>
       </div>
-      <div class="form-group">
-        <label>数据格式 (JSON)</label>
-        <textarea id="import-data" rows="8" placeholder='[
-  {"ip":"192.168.1.100","view_path":"/lovelace/tablet","width":1920,"height":1080}
-]'></textarea>
-        <div class="format-hint">支持 JSON 数组，每条记录包含 ip、view_path、width、height</div>
-      </div>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:32px">
-        <button class="btn btn-secondary" onclick="closeImportModal()">取消</button>
-        <button class="btn btn-primary" onclick="doImport()">导入</button>
+      <ul class="cat-list" id="cat-list"></ul>
+      <div class="cat-add-row">
+        <input type="text" id="cat-add-input" placeholder="新分类名称" onkeydown="if(event.key==='Enter')addCatFromInput()">
+        <button class="btn btn-primary btn-sm" onclick="addCatFromInput()">添加</button>
       </div>
     </div>
   </div>
@@ -544,7 +526,7 @@
   <div id="range-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>批量添加IP段</h2>
+        <h2>批量添加</h2>
         <button class="modal-close" onclick="closeRangeModal()">&times;</button>
       </div>
       <div class="form-group">
@@ -871,32 +853,13 @@
       loadWhitelist();
     }
 
-    function showImportModal() {
-      document.getElementById('import-data').value = '';
-      document.getElementById('import-modal').classList.add('active');
+    function showCatModal() {
+      renderCatManage();
+      document.getElementById('cat-modal').classList.add('active');
     }
 
-    function closeImportModal() {
-      document.getElementById('import-modal').classList.remove('active');
-    }
-
-    async function doImport() {
-      const raw = document.getElementById('import-data').value.trim();
-      let items;
-      try {
-        items = JSON.parse(raw);
-        if (!Array.isArray(items)) throw new Error('需要数组格式');
-      } catch (e) {
-        alert('JSON格式错误: ' + e.message);
-        return;
-      }
-      const res = await fetch(INGRESS_PATH + '/admin/whitelist/batch', {
-        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ items })
-      });
-      const result = await res.json();
-      alert(`导入完成: 新增 ${result.imported} 条, 更新 ${result.updated} 条`);
-      closeImportModal();
-      loadWhitelist();
+    function closeCatModal() {
+      document.getElementById('cat-modal').classList.remove('active');
     }
 
     loadWhitelist();
