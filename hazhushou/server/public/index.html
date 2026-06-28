@@ -171,53 +171,6 @@
       color: var(--text-secondary);
     }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .stat-card {
-      background: rgba(18, 19, 26, 0.70);
-      backdrop-filter: blur(20px) saturate(1.2);
-      -webkit-backdrop-filter: blur(20px) saturate(1.2);
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s var(--ease-default);
-    }
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--gradient-primary);
-      opacity: 0.6;
-    }
-    .stat-card:hover {
-      border-color: var(--border-hover);
-      box-shadow: var(--shadow-glow);
-      transform: translateY(-2px);
-    }
-    .stat-card-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .stat-card-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text-glow);
-      font-variant-numeric: tabular-nums;
-      text-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
-    }
-
     .card {
       background: rgba(18, 19, 26, 0.70);
       backdrop-filter: blur(20px) saturate(1.2);
@@ -633,6 +586,11 @@
       position: relative;
       z-index: 100;
     }
+    .device-count {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
     .cat-dropdown {
       position: relative;
       display: inline-block;
@@ -838,7 +796,6 @@
     @media (max-width: 768px) {
       .main-content { padding: 24px 16px; }
       .page-header h2 { font-size: 24px; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
       .header { padding: 0 16px; }
       .card-header {
         flex-direction: column;
@@ -848,10 +805,6 @@
       .btn-group { width: 100%; flex-wrap: wrap; }
       table { font-size: 13px; }
       th, td { padding: 10px 8px; }
-    }
-
-    @media (max-width: 480px) {
-      .stats-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -878,25 +831,6 @@
         <div class="page-header">
           <h2>设备管理</h2>
           <p>管理允许访问 Home Assistant 仪表板的终端设备</p>
-        </div>
-
-        <div class="stats-row stagger-item">
-          <div class="stat-card">
-            <div class="stat-card-label">总设备数</div>
-            <div class="stat-card-value" id="stat-total">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">分类数</div>
-            <div class="stat-card-value" id="stat-categories">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">已连接</div>
-            <div class="stat-card-value" id="stat-connected">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">在线率</div>
-            <div class="stat-card-value" id="stat-rate">0%</div>
-          </div>
         </div>
 
         <div class="category-bar stagger-item" id="category-bar"></div>
@@ -1043,18 +977,6 @@
     let activeCategory = '';
     let currentEdit = null;
 
-    function updateStats() {
-      const total = whitelist.length;
-      const catCount = categories.length;
-      const connected = whitelist.filter(i => i.lastPull).length;
-      const rate = total > 0 ? Math.round((connected / total) * 100) : 0;
-
-      document.getElementById('stat-total').textContent = total;
-      document.getElementById('stat-categories').textContent = catCount;
-      document.getElementById('stat-connected').textContent = connected;
-      document.getElementById('stat-rate').textContent = rate + '%';
-    }
-
     async function loadCategories() {
       const res = await fetch(INGRESS_PATH + '/admin/categories');
       categories = await res.json();
@@ -1183,7 +1105,7 @@
         else counts[cat] = 1;
       }
       const activeName = activeCategory === '' ? '全部' : activeCategory;
-      const activeCount = counts[activeCategory] || 0;
+      const activeCount = activeCategory === '' ? whitelist.length : (counts[activeCategory] || 0);
       let menuItems = `<div class="cat-dropdown-item ${activeCategory === '' ? 'active' : ''}" onclick="selectCategory('')">全部<span class="item-count">${counts['']}</span></div>`;
       for (const c of categories) {
         menuItems += `<div class="cat-dropdown-item ${activeCategory === c ? 'active' : ''}" onclick="selectCategory('${c}')">${c}<span class="item-count">${counts[c] || 0}</span></div>`;
@@ -1194,7 +1116,8 @@
           <span class="arrow">▼</span>
         </div>
         <div class="cat-dropdown-menu">${menuItems}</div>
-      </div>`;
+      </div>
+      <span class="device-count">${activeCount} 台设备</span>`;
     }
 
     function toggleCatDropdown(e) {
@@ -1242,7 +1165,6 @@
       tbody.innerHTML = filtered.map(item => {
         const sizeDisplay = (item.width && item.height) ? `${item.width}x${item.height}` : '全屏';
         const lastPull = item.lastPull ? new Date(item.lastPull).toLocaleString('zh-CN') : '从未连接';
-        const isConnected = item.lastPull && (Date.now() - new Date(item.lastPull).getTime() < 24 * 60 * 60 * 1000);
         const previewURL = buildPreviewURL(item);
         const cat = item.category || '-';
         return `<tr>
@@ -1250,11 +1172,7 @@
           <td><span class="status-badge ${cat !== '-' ? 'status-success' : 'status-warning'}">${cat}</span></td>
           <td style="color:var(--text-secondary);font-size:13px">${item.view_path || '-'}</td>
           <td style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-secondary)">${sizeDisplay}</td>
-          <td>
-            <span class="status-badge ${isConnected ? 'status-success' : 'status-error'}">
-              ${isConnected ? '在线' : (item.lastPull ? '离线' : '未连接')}
-            </span>
-          </td>
+          <td style="color:var(--text-secondary);font-size:13px">${lastPull}</td>
           <td>
             <div class="action-cell">
               <a href="${previewURL}" target="_blank" class="preview-link">预览</a>
@@ -1265,7 +1183,7 @@
           </td>
         </tr>`;
       }).join('') || '<tr><td colspan="6" class="empty-state">暂无设备，点击「添加设备」开始</td></tr>';
-      updateStats();
+      renderCategoryBar();
     }
 
     function buildPreviewURL(item) {
