@@ -982,7 +982,6 @@
       categories = await res.json();
       renderCategoryBar();
       renderCatManage();
-      updateStats();
     }
 
     function renderCatManage() {
@@ -1248,7 +1247,7 @@
     async function deleteItem(ip) {
       if (!confirm('确定删除 ' + ip + '？')) return;
       await fetch(INGRESS_PATH + '/admin/whitelist/' + encodeURIComponent(ip), { method: 'DELETE' });
-      loadWhitelist();
+      await loadWhitelist();
     }
 
     function copyItem(ip) {
